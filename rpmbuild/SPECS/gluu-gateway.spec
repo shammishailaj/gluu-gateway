@@ -31,6 +31,7 @@ cp -a opt/gluu-gateway %{buildroot}/opt/
 %pre
 mkdir -p /opt/gluu-gateway/konga/config/locales
 mkdir -p /opt/gluu-gateway/konga/config/env
+mkdir -p /opt/gluu-gateway/plugins
 
 %post
 /etc/init.d/gluu-gateway stop > /dev/null 2>&1
