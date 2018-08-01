@@ -1,0 +1,53 @@
+version: '3.3'
+services:
+    kong-database:
+        image: postgres:9.5
+        environment:
+            POSTGRES_USER: kong
+            POSTGRES_DB: kong
+
+    kong-migration:
+        image: kong:0.14.0-alpine
+        environment:
+          KONG_DATABASE: postgres
+          KONG_PG_HOST: kong-database
+          KONG_LOG_LEVEL: debug
+          KONG_PROXY_ACCESS_LOG: /dev/stdout
+          KONG_ADMIN_ACCESS_LOG: /dev/stdout
+          KONG_PROXY_ERROR_LOG:  /dev/stderr
+          KONG_ADMIN_ERROR_LOG:  /dev/stderr
+        command: kong migrations up
+
+    kong:
+        image: kong:0.14.0-alpine
+        environment:
+          KONG_DATABASE: postgres
+          KONG_PG_HOST: kong-database
+          KONG_PG_DATABASE: kong
+          KONG_ADMIN_LISTEN: 0.0.0.0:8001
+          KONG_LOG_LEVEL: debug
+          KONG_PROXY_ACCESS_LOG: /dev/stdout
+          KONG_ADMIN_ACCESS_LOG: /dev/stdout
+          KONG_PROXY_ERROR_LOG:  /dev/stderr
+          KONG_ADMIN_ERROR_LOG:  /dev/stderr
+          KONG_PLUGINS: test1
+        ports:
+            - "8000"
+            - "8001"
+        volumes:
+            - ${HOST_GIT_ROOT}/t/utils/plugin:/usr/local/openresty/lualib/kong/plugins/test1:ro
+            - ${HOST_GIT_ROOT}/gluu-oauth2-client-auth/kong/plugins/gluu-oauth2-client-auth:/usr/local/share/lua/5.1/kong/plugins/gluu-oauth2-client-auth:ro
+
+    oxd-mock:
+        image: openresty/openresty:alpine
+        ports:
+            - "80"
+        volumes:
+            - ${HOST_GIT_ROOT}/t/utils/oxd-mock.nginx:/usr/local/openresty/nginx/conf/nginx.conf:ro
+            - ${HOST_GIT_ROOT}/t/oxd-mock.lua:/usr/local/openresty/lualib/gluu/oxd-mock.lua:ro
+            - ${HOST_GIT_ROOT}/t/utils/oxd-model.lua:/usr/local/openresty/lualib/gluu/oxd-model.lua:ro
+
+    backend:
+        image: openresty/openresty:alpine
+        volumes:
+            - ${HOST_GIT_ROOT}/t/utils/backend.nginx:/usr/local/openresty/nginx/conf/nginx.conf:ro
