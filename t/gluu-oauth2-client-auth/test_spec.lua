@@ -47,9 +47,9 @@ test("kong test", function()
         docker_compose("down -v") -- comment this out if you need to see logs after errors
     end)
 
-    local kong_admin_port = stdout("docker inspect --format='{{(index (index .NetworkSettings.Ports \"8001/tcp\") 0).HostPort}}' test1_kong_1")
-    local kong_proxy_port = stdout("docker inspect --format='{{(index (index .NetworkSettings.Ports \"8000/tcp\") 0).HostPort}}' test1_kong_1")
-    local oxd_port = stdout("docker inspect --format='{{(index (index .NetworkSettings.Ports \"80/tcp\") 0).HostPort}}' test1_oxd-mock_1")
+    local kong_admin_port = stdout("docker inspect --format='{{(index (index .NetworkSettings.Ports \"8001/tcp\") 0).HostPort}}' "..test_name.."_kong_1")
+    local kong_proxy_port = stdout("docker inspect --format='{{(index (index .NetworkSettings.Ports \"8000/tcp\") 0).HostPort}}' "..test_name.."_kong_1")
+    local oxd_port = stdout("docker inspect --format='{{(index (index .NetworkSettings.Ports \"80/tcp\") 0).HostPort}}' "..test_name.."_oxd-mock_1")
 
     -- create a Sevice
     local res, err = sh_ex(
