@@ -186,7 +186,7 @@
         }
 
 
-        function createBasicAuthCredentials() {
+        function createBasicAuthCredentials(cred) {
           $uibModal.open({
             animation: true,
             ariaLabelledBy: 'modal-title',
@@ -197,6 +197,9 @@
             resolve: {
               _consumer: function () {
                 return $scope.consumer
+              },
+              _cred: function () {
+                return cred;
               }
             }
           });
