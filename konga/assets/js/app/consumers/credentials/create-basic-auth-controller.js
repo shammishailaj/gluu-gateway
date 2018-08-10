@@ -21,8 +21,7 @@
           $scope.credentials = _cred
         } else {
           $scope.credentials = {
-            username: '',
-            password: ''
+            username: ''
           }
         }
 
