@@ -160,6 +160,7 @@ function _M.register(conf)
         op_host = conf.op_server,
         authorization_redirect_uri = "https://client.example.com/cb",
         client_name = "gluu-oauth2-introspect-client",
+        setup_client_name = "gluu-oauth2-introspect-setup-client",
         grant_types = { "client_credentials" }
     }
 

@@ -106,6 +106,8 @@ return {
                 client_token_endpoint_auth_signing_alg = self.params.client_token_endpoint_auth_signing_alg or ""
             }
 
+            body.setup_client_name = body.client_name .. "_setup_client"
+
             local regClientResponseBody
             local regData
             -- setup client

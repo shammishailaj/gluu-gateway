@@ -401,7 +401,8 @@ class KongSetup(object):
                 'post_logout_redirect_uri': AuthorizationRedirectUri,
                 'scope': ['openid', 'uma_protection'],
                 'grant_types': ['authorization_code'],
-                'client_name': 'konga_client'
+                'client_name': 'konga_client',
+                'setup_client_name': 'konga_setup_client'
             }
             self.logIt('Creating konga oxd client used to call oxd-https endpoints...')
             print 'Creating konga oxd client used to call oxd-https endpoints...'

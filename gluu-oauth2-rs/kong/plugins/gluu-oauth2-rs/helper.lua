@@ -44,7 +44,8 @@ function _M.register(conf)
         op_host = conf.uma_server_host,
         authorization_redirect_uri = "https://client.example.com/cb",
         response_types = { "code" },
-        client_name = "kong_uma_rs",
+        client_name = "kong-uma-rs-client",
+        setup_client_name = "kong-uma-rs-setup-client",
         grant_types = { "authorization_code" }
     }
 
