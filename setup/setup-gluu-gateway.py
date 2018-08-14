@@ -58,6 +58,7 @@ class KongSetup(object):
         self.hostname = '/bin/hostname'
         self.cmd_touch = '/bin/touch'
         self.cmd_mv = '/bin/mv'
+        self.cmd_cp = '/bin/cp'
         self.cmd_node = '/usr/bin/node'
         self.cmd_update_rs_d = '/usr/sbin/update-rc.d'
         self.cmd_sh = '/bin/sh'
@@ -76,7 +77,8 @@ class KongSetup(object):
         self.kongAdminListenSsl = '8445'
         self.distKongConfigFolder = '/etc/kong'
         self.distKongConfigFile = '%s/kong.conf' % self.distKongConfigFolder
-        self.distKongPluginsFolder = '/usr/local/share/lua/5.1/kong/plugins'
+        self.distKongFolder = '/usr/local/share/lua/5.1/kong'
+        self.distKongPluginsFolder = '%s/plugins' % self.distKongFolder
 
         self.optFolder = '/opt'
         self.distGluuGatewayFolder = '%s/gluu-gateway' % self.optFolder
@@ -149,6 +151,11 @@ class KongSetup(object):
         self.ggBowerModulesDir = "%s/bower_components" % self.distKongaAssestFolder
         self.ggNodeModulesArchive = 'gg_node_modules.tar.gz'
         self.ggBowerModulesArchive = 'gg_bower_components.tar.gz'
+
+        # third party lua library
+        self.jsonLuaFilePath = '%s/third-party/json-lua/JSON.lua' % self.distGluuGatewayFolder
+        self.oxdWebFilePath = '%s/third-party/oxd-web-lua/oxdweb.lua' % self.distGluuGatewayFolder
+        self.jsonLogicFilePath = '%s/third-party/json-logic-lua/logic.lua' % self.distGluuGatewayFolder
 
     def initParametersFromJsonArgument(self):
         if len(sys.argv) > 1:
@@ -364,9 +371,14 @@ class KongSetup(object):
 
     def installPlugins(self):
         self.logIt('Installing luarocks packages...')
-        self.run(['luarocks', 'install', 'json-lua', '0.1-3'])
-        self.run(['luarocks', 'install', 'oxd-web-lua', '1.0-0'])
-        self.run(['luarocks', 'install', 'json-logic-lua', '0.2.0-1'])
+        # Move and Copy libs to kong path
+        self.run([self.cmd_cp, self.jsonLuaFilePath, self.distKongFolder])
+        self.run([self.cmd_cp, self.oxdWebFilePath, self.distKongFolder])
+
+        # Make extra folder for Json logic lib
+        self.run([self.cmd_mkdir, '-p', '%s/rucciva' % self.distKongFolder])
+        self.run([self.cmd_cp, self.jsonLogicFilePath, '%s/rucciva/json_logic.lua' % self.distKongFolder])
+
         self.run([self.cmd_mv, self.gluuOAuth2ClientAuthPlugin, self.distKongPluginsFolder])
         self.run([self.cmd_mv, self.gluuOAuth2RSPlugin, self.distKongPluginsFolder])
 
@@ -506,11 +518,10 @@ class KongSetup(object):
         self.installOxd = self.makeBoolean(self.getPrompt(
             'Would you like to configure oxd-server? (y - configure, n - skip)', 'y'))
 
-        #We are going to ask for 'OP hostname' regardless of whether we're installing oxd or not
+        # We are going to ask for 'OP hostname' regardless of whether we're installing oxd or not
         self.kongaOPHost = 'https://' + self.getPrompt('OP hostname')
 
         if self.installOxd:
-            #self.kongaOPHost = 'https://' + self.getPrompt('OP hostname')
             self.oxdServerOPDiscoveryPath = self.kongaOPHost + '/.well-known/openid-configuration'
             self.oxdServerLicenseId = self.getPrompt('License Id')
             self.oxdServerPublicKey = self.getPrompt('Public key')
@@ -524,12 +535,9 @@ class KongSetup(object):
             """
         print msg
 
-        #if not self.installOxd:
-            #self.kongaOPHost = 'https://' + self.getPrompt('OP hostname')
-
         self.kongaOxdWeb = self.getPrompt('oxd https url', 'https://%s:8443' % self.hostname)
 
-        #https://xyz.domain.com:8443 is split to: //xyz.domain.com to xyz.domain.com
+        # https://xyz.domain.com:8443 is split to: //xyz.domain.com to xyz.domain.com
         self.oxdHost = self.kongaOxdWeb.split(":")[1][2:]
 
         self.generateClient = self.makeBoolean(self.getPrompt("Generate client creds to call oxd-https API's? (y - generate, n - enter existing client credentials manually)", 'y'))
