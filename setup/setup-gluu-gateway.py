@@ -81,6 +81,7 @@ class KongSetup(object):
         self.optFolder = '/opt'
         self.distGluuGatewayFolder = '%s/gluu-gateway' % self.optFolder
         self.distKongaFolder = '%s/konga' % self.distGluuGatewayFolder
+        self.distKongaAssestFolder = '%s/assets' % self.distKongaFolder
         self.distKongaConfigPath = '%s/config' % self.distKongaFolder
         self.distKongaConfigFile = '%s/config/local.js' % self.distKongaFolder
         self.distKongaDBFile = '%s/setup/templates/konga_db.sql' % self.distGluuGatewayFolder
@@ -125,7 +126,8 @@ class KongSetup(object):
         # JRE setup properties
         self.jre_version = '162'
         self.jreDestinationPath = '/opt/jdk1.8.0_%s' % self.jre_version
-        self.distAppFolder = '%s/dist/app' % self.distGluuGatewayFolder
+        self.distFolder = '%s/dist' % self.distGluuGatewayFolder
+        self.distAppFolder = '%s/app' % self.distFolder
         self.jre_home = '/opt/jre'
         self.jreSHFileName = 'jre-gluu.sh'
         self.isPrompt = True
@@ -141,6 +143,12 @@ class KongSetup(object):
         # PostgreSQL config file path
         self.distPGhbaConfigPath = '/var/lib/pgsql/10/data'
         self.distPGhbaConfigFile = '%s/pg_hba.conf' % self.distPGhbaConfigPath
+
+        # dependency zips
+        self.ggNodeModulesDir = "%s/node_modules" % self.distKongaFolder
+        self.ggBowerModulesDir = "%s/bower_components" % self.distKongaAssestFolder
+        self.ggNodeModulesArchive = 'gg_node_modules.tar.gz'
+        self.ggBowerModulesArchive = 'gg_bower_components.tar.gz'
 
     def initParametersFromJsonArgument(self):
         if len(sys.argv) > 1:
@@ -389,9 +397,21 @@ class KongSetup(object):
         if not os.path.exists(self.cmd_node):
             self.run([self.cmd_ln, '-s', '`which nodejs`', self.cmd_node])
 
-        self.run(['npm', 'install', '-g', 'bower@1.8.4', 'gulp@3.9.1', 'sails@1.0.0'])
-        self.run(['npm', 'install', '--unsafe-perm'], self.distKongaFolder, os.environ.copy(), True)
-        self.run(['bower', '--allow-root', 'install'], self.distKongaFolder, os.environ.copy(), True)
+        try:
+            self.run([self.cmd_mkdir, '-p', self.ggNodeModulesDir])
+            self.logIt("Extracting %s into %s" % (self.ggNodeModulesArchive, self.ggNodeModulesDir))
+            self.run(['tar', '--strip', '1', '-xzf', '%s/%s' % (self.distFolder, self.ggNodeModulesArchive), '-C', self.ggNodeModulesDir, '--no-xattrs', '--no-same-owner', '--no-same-permissions'])
+        except:
+            self.logIt("Error encountered while extracting archive %s" % self.ggNodeModulesArchive)
+            self.logIt(traceback.format_exc(), True)
+
+        try:
+            self.run([self.cmd_mkdir, '-p', self.ggBowerModulesDir])
+            self.logIt("Extracting %s into %s" % (self.ggBowerModulesArchive, self.ggBowerModulesDir))
+            self.run(['tar', '--strip', '1', '-xzf', '%s/%s' % (self.distFolder, self.ggBowerModulesArchive), '-C', self.ggBowerModulesDir, '--no-xattrs', '--no-same-owner', '--no-same-permissions'])
+        except:
+            self.logIt("Error encountered while extracting archive %s" % self.ggBowerModulesArchive)
+            self.logIt(traceback.format_exc(), True)
 
         if self.generateClient:
             AuthorizationRedirectUri = 'https://' + self.oxdAuthorizationRedirectUri + ':' + self.kongaPort
