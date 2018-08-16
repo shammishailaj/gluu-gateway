@@ -77,7 +77,8 @@ class KongSetup(object):
         self.kongAdminListenSsl = '8445'
         self.distKongConfigFolder = '/etc/kong'
         self.distKongConfigFile = '%s/kong.conf' % self.distKongConfigFolder
-        self.distKongFolder = '/usr/local/share/lua/5.1/kong'
+        self.distLuaFolder = '/usr/local/share/lua/5.1'
+        self.distKongFolder = '%s/kong' % self.distLuaFolder
         self.distKongPluginsFolder = '%s/plugins' % self.distKongFolder
 
         self.optFolder = '/opt'
@@ -372,12 +373,12 @@ class KongSetup(object):
     def installPlugins(self):
         self.logIt('Installing luarocks packages...')
         # Move and Copy libs to kong path
-        self.run([self.cmd_cp, self.jsonLuaFilePath, self.distKongFolder])
-        self.run([self.cmd_cp, self.oxdWebFilePath, self.distKongFolder])
+        self.run([self.cmd_cp, self.jsonLuaFilePath, self.distLuaFolder])
+        self.run([self.cmd_cp, self.oxdWebFilePath, self.distLuaFolder])
 
         # Make extra folder for Json logic lib
-        self.run([self.cmd_mkdir, '-p', '%s/rucciva' % self.distKongFolder])
-        self.run([self.cmd_cp, self.jsonLogicFilePath, '%s/rucciva/json_logic.lua' % self.distKongFolder])
+        self.run([self.cmd_mkdir, '-p', '%s/rucciva' % self.distLuaFolder])
+        self.run([self.cmd_cp, self.jsonLogicFilePath, '%s/rucciva/json_logic.lua' % self.distLuaFolder])
 
         self.run([self.cmd_mv, self.gluuOAuth2ClientAuthPlugin, self.distKongPluginsFolder])
         self.run([self.cmd_mv, self.gluuOAuth2RSPlugin, self.distKongPluginsFolder])
