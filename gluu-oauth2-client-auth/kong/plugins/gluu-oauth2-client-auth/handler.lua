@@ -15,9 +15,4 @@ function Handler:access(conf)
     end
 end
 
-function Handler:log(conf)
-    Handler.super.log(self)
-    access.execute_log(conf)
-end
-
 return Handler
