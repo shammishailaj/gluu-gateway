@@ -166,7 +166,7 @@ describe("Plugin: gluu-oauth2-client-auth (API)", function()
                 assert.equal(true, body.oauth_mode)
                 assert.equal(false, body.allow_unprotected_path)
                 assert.equal(true, body.show_consumer_custom_id)
-                assert.equal(true, body.allow_oauth_scope_expression)
+                assert.equal(false, body.allow_oauth_scope_expression)
             end)
             it("creates a oauth2 consumer credential with oauth_mode = true", function()
                 local res = assert(admin_client:send {
@@ -193,7 +193,7 @@ describe("Plugin: gluu-oauth2-client-auth (API)", function()
                 assert.equal(true, body.oauth_mode)
                 assert.equal(false, body.allow_unprotected_path)
                 assert.equal(true, body.show_consumer_custom_id)
-                assert.equal(true, body.allow_oauth_scope_expression)
+                assert.equal(false, body.allow_oauth_scope_expression)
             end)
             it("creates a oauth2 consumer credential with oauth_mode = true", function()
                 local res = assert(admin_client:send {
@@ -333,7 +333,8 @@ describe("Plugin: gluu-oauth2-client-auth (API)", function()
                         oxd_id = setupClientResponse.data.oxd_id,
                         client_id = setupClientResponse.data.client_id,
                         client_secret = setupClientResponse.data.client_secret,
-                        client_id_of_oxd_id = setupClientResponse.data.client_id_of_oxd_id
+                        client_id_of_oxd_id = setupClientResponse.data.client_id_of_oxd_id,
+                        setup_client_oxd_id = setupClientResponse.data.setup_client_oxd_id
                     },
                     headers = {
                         ["Content-Type"] = "application/json"
@@ -350,53 +351,6 @@ describe("Plugin: gluu-oauth2-client-auth (API)", function()
                 assert.equal(false, body.uma_mode)
                 assert.equal(true, body.oauth_mode)
                 assert.equal("clientinfo,uma_protection", body.scope)
-            end)
-            it("creates oauth2 credentials with the scope", function()
-                -- ------------------GET Client Token-------------------------------
-                local setupClientRequest = {
-                    oxd_host = oxd_http_url,
-                    op_host = op_server,
-                    authorization_redirect_uri = "https://localhost",
-                    redirect_uris = { "https://localhost" },
-                    scope = { "clientinfo", "uma_protection" },
-                    grant_types = { "client_credentials" },
-                    client_name = "Test_existing_client"
-                };
-
-                local setupClientResponse = oxd.setup_client(setupClientRequest)
-                if setupClientResponse.status == "error" then
-                    print("Failed to create client")
-                end
-
-                local res = assert(admin_client:send {
-                    method = "POST",
-                    path = "/consumers/foo/gluu-oauth2-client-auth",
-                    body = {
-                        name = "Existing_oauth2_credential",
-                        op_host = op_server,
-                        oxd_http_url = oxd_http_url,
-                        oxd_id = setupClientResponse.data.oxd_id,
-                        client_id = setupClientResponse.data.client_id,
-                        client_secret = setupClientResponse.data.client_secret,
-                        client_id_of_oxd_id = setupClientResponse.data.client_id_of_oxd_id,
-                        scope = "calendar"
-                    },
-                    headers = {
-                        ["Content-Type"] = "application/json"
-                    }
-                })
-                local body = cjson.decode(assert.res_status(201, res))
-                assert.equal(consumer.id, body.consumer_id)
-                assert.equal("Existing_oauth2_credential", body.name)
-                assert.equal(setupClientResponse.data.oxd_id, body.oxd_id)
-                assert.equal(setupClientResponse.data.client_id, body.client_id)
-                assert.equal(setupClientResponse.data.client_secret, body.client_secret)
-                assert.equal(setupClientResponse.data.client_id_of_oxd_id, body.client_id_of_oxd_id)
-                assert.equal(false, body.mix_mode)
-                assert.equal(false, body.uma_mode)
-                assert.equal(true, body.oauth_mode)
-                assert.equal("calendar,clientinfo,uma_protection", body.scope)
-                assert.equal(false, body.restrict_api)
             end)
             it("creates oauth2 credentials with the restricted API", function()
                 -- ------------------GET Client Token-------------------------------
@@ -427,7 +381,7 @@ describe("Plugin: gluu-oauth2-client-auth (API)", function()
                         client_id = setupClientResponse.data.client_id,
                         client_secret = setupClientResponse.data.client_secret,
                         client_id_of_oxd_id = setupClientResponse.data.client_id_of_oxd_id,
-                        scope = "calendar",
+                        setup_client_oxd_id = setupClientResponse.data.setup_client_oxd_id,
                         restrict_api = true
                     },
                     headers = {
@@ -436,7 +390,7 @@ describe("Plugin: gluu-oauth2-client-auth (API)", function()
                 })
                 local body = assert.res_status(400, res)
                 local json = cjson.decode(body)
-                assert.equal("Require atleast one API in restrict APIs", json.message)
+                assert.equal("Requires at least one restricted API", json.message)
 
                 -- Failed 400
                 local invalid_api_id = "fdfdsf343545"
@@ -451,7 +405,7 @@ describe("Plugin: gluu-oauth2-client-auth (API)", function()
                         client_id = setupClientResponse.data.client_id,
                         client_secret = setupClientResponse.data.client_secret,
                         client_id_of_oxd_id = setupClientResponse.data.client_id_of_oxd_id,
-                        scope = "calendar",
+                        setup_client_oxd_id = setupClientResponse.data.setup_client_oxd_id,
                         restrict_api = true,
                         restrict_api_list = table.concat({api1.id, invalid_api_id, api2.id}, ",")
                     },
@@ -475,7 +429,7 @@ describe("Plugin: gluu-oauth2-client-auth (API)", function()
                         client_id = setupClientResponse.data.client_id,
                         client_secret = setupClientResponse.data.client_secret,
                         client_id_of_oxd_id = setupClientResponse.data.client_id_of_oxd_id,
-                        scope = "calendar",
+                        setup_client_oxd_id = setupClientResponse.data.setup_client_oxd_id,
                         restrict_api = true,
                         restrict_api_list = table.concat({api1.id, api2.id}, ",")
                     },
@@ -493,7 +447,6 @@ describe("Plugin: gluu-oauth2-client-auth (API)", function()
                 assert.equal(false, body.mix_mode)
                 assert.equal(false, body.uma_mode)
                 assert.equal(true, body.oauth_mode)
-                assert.equal("calendar,clientinfo,uma_protection", body.scope)
                 assert.equal(true, body.restrict_api)
             end)
             describe("errors", function()
@@ -611,6 +564,7 @@ describe("Plugin: gluu-oauth2-client-auth (API)", function()
                         client_id = "client_id_" .. i,
                         client_secret = "client_secret_" .. i,
                         client_id_of_oxd_id = "client_id_of_oxd_id_" .. i,
+                        setup_client_oxd_id = "setup_client_oxd_id_" .. i,
                         oxd_http_url = oxd_http_url,
                         op_host = op_server,
                         consumer_id = consumer.id

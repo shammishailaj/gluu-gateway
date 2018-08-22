@@ -30,6 +30,8 @@ return {
     fields = {
         hide_credentials = { type = "boolean", default = false },
         oxd_id = { type = "string" },
+        client_id = { type = "string" },
+        client_secret = { type = "string" },
         op_server = { required = true, type = "string", func = op_server_validator },
         oxd_http_url = { required = true, type = "string" },
         anonymous = {type = "string", default = "", func = check_user}

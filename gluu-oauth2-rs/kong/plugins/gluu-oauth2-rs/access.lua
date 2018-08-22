@@ -286,7 +286,7 @@ function _M.execute(conf)
             end
 
             ngx.log(ngx.DEBUG, "Checking allow_oauth_scope_expression...")
-            if helper.check_json_expression(scope_expression, clientPluginCacheToken.scopes) then
+            if helper.check_json_expression(scope_expression, clientPluginCacheToken.scope) then
                 ngx.log(ngx.DEBUG, "OAuth scope expression result : true")
                 return -- Access Granted
             else

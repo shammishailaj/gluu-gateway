@@ -25,7 +25,7 @@ local function get_token_data(token)
             exp_sec = token.exp_sec,
             consumer_id = token.consumer_id,
             token_type = token.token_type,
-            scopes = token.scopes,
+            scope = token.scope,
             iss = token.iss,
             permissions = token.permissions,
             iat = token.iat,
@@ -198,7 +198,7 @@ local function validate_credentials(conf, req_token)
         -- If (tokenType == OAuth)(oauth_mode == true) then set header
         if cacheToken.token_type == "OAuth" and credential.oauth_mode == true then
             ngx_set_header(OAUTH_CLIENT_ID, cacheToken.client_id)
-            ngx_set_header(OAUTH_SCOPES, table.concat(cacheToken.scopes, ","))
+            ngx_set_header(OAUTH_SCOPES, table.concat(cacheToken.scope, ","))
             ngx_set_header(OAUTH_EXPIRATION, cacheToken.exp)
         end
 
@@ -207,12 +207,19 @@ local function validate_credentials(conf, req_token)
 
     ngx.log(ngx.DEBUG, PLUGINNAME .. ": Token not found in cache, so goes to introspect it")
     -- *---- Introspect token ----*
-    local tokenResponse = helper.introspect_access_token(conf, req_token)
+    local permission_access_token = helper.get_client_token(conf)
+
+    if helper.is_empty(permission_access_token) then
+        ngx.log(ngx.DEBUG, PLUGINNAME .. ": Failed to get permission token for introspection")
+        return { active = false }
+    end
+
+    local tokenResponse = helper.introspect_access_token(conf, permission_access_token, req_token)
     local tokenType
     if tokenResponse.data.active then
         tokenType = "OAuth"
     else
-        tokenResponse = helper.introspect_rpt(conf, req_token)
+        tokenResponse = helper.introspect_rpt(conf, permission_access_token, req_token)
         tokenResponse.isUMA = true
         tokenType = "UMA"
     end
@@ -265,7 +272,7 @@ local function validate_credentials(conf, req_token)
     -- If (tokenType == OAuth)(oauth_mode == true) then set header
     if tokenType == "OAuth" and credential.oauth_mode == true then
         ngx_set_header(OAUTH_CLIENT_ID, tokenResponse.data.client_id)
-        ngx_set_header(OAUTH_SCOPES, table.concat(tokenResponse.data.scopes, ","))
+        ngx_set_header(OAUTH_SCOPES, table.concat(tokenResponse.data.scope, ","))
         ngx_set_header(OAUTH_EXPIRATION, tokenResponse.data.exp)
     end
 

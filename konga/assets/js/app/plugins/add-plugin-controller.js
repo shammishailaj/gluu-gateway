@@ -55,6 +55,8 @@
 
           if (_pluginName == "gluu-oauth2-client-auth") {
             $scope.data.fields.oxd_id.value = $scope.globalInfo.oxdId
+            $scope.data.fields.client_id.value = $scope.globalInfo.clientId
+            $scope.data.fields.client_secret.value = $scope.globalInfo.clientSecret
             delete $scope.data.fields.op_server
             delete $scope.data.fields.oxd_http_url
           }

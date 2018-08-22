@@ -1031,7 +1031,7 @@ describe("gluu-oauth2-client-auth plugin", function()
                 })
                 assert.res_status(200, res)
 
-                -- Request to other register path, 401/Unauthorized because RPT token is for path /posts not for /comments
+                -- Request to other register path, 403/Forbidden because RPT token is for path /posts not for /comments
                 local res = assert(proxy_client:send {
                     method = "GET",
                     path = "/comments",
@@ -1346,7 +1346,7 @@ describe("gluu-oauth2-client-auth plugin", function()
                 assert.res_status(200, res)
                 assert.equal(true, auth_helper.is_empty(res.headers["uma-warning"]))
 
-                -- Request to other register path, 401/Unauthorized because RPT token is for path /posts not for /comments
+                -- Request to other register path, 403/Forbidden because RPT token is for path /posts not for /comments
                 local res = assert(proxy_client:send {
                     method = "GET",
                     path = "/comments",

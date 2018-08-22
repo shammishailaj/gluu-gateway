@@ -67,8 +67,11 @@ module.exports = {
   },
   oxdWeb: 'http://localhost:8553',
   opHost: 'https://gluu.local.org',
-  oxdId: '4a9ea86e-821f-4d27-9cbe-9a70f3b226c8',
-  clientId: '@!4068.62D5.C8A8.F3C0!0001!B574.28AF!0008!7099.9D0C.5FCE.E164',
-  clientSecret: '9517e565-f96b-49f4-835d-e50eb5492c98',
-  oxdVersion: 'Version 3.1.1'
+  oxdId: '2f83d8b9-9a27-430e-8eb3-6e4f5d6ba337',
+  oxdServerLicenseId: 'e5c1bfd2-3306-4c9e-a49d-983f47454752',
+  clientIdOfOXDId: '@!443A.4EBD.9838.15E3!0001!FF43.663E!0008!DB3E.3D96.23FB.060C',
+  setupClientOXDId: '2f904d9c-688c-4118-9a17-d471ea3c1315',
+  clientId: '@!443A.4EBD.9838.15E3!0001!FF43.663E!0008!192E.EC6E.16B1.DEC9',
+  clientSecret: 'f2b5cc6d-9d33-48f3-b5b1-888e23b50093',
+  oxdVersion: '3.1.4'
 };

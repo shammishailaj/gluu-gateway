@@ -172,21 +172,46 @@ function _M.register(conf)
     end
 
     conf.oxd_id = setupClientResponse.data.oxd_id
+    conf.client_id = setupClientResponse.data.client_id
+    conf.client_secret = setupClientResponse.data.client_secret
+
     return true
+end
+
+--- Used to protection access token
+-- @param conf: plugin global values
+-- @return response: response of get_client_token
+function _M.get_client_token(conf)
+    local tokenBody = {
+        oxd_host = conf.oxd_http_url,
+        client_id = conf.client_id,
+        client_secret = conf.client_secret,
+        op_host = conf.op_server
+    }
+
+    local getTokenResponse = oxd.get_client_token(tokenBody)
+
+    if _M.is_empty(getTokenResponse.status) or getTokenResponse.status == "error" then
+        ngx.log(ngx.DEBUG, PLUGINNAME .. ": Error in get client token")
+        return nil
+    end
+
+    return getTokenResponse.data.access_token
 end
 
 --- Used to introspect OAuth2 access token
 -- @param conf: plugin global values
--- @param token: requested oAuth2 access token token for introspect
+-- @param permission_token: permission access token
+-- @param req_token: requested RPT token for introspect
 -- @return response: response of introspect_access_token
-function _M.introspect_access_token(conf, token)
+function _M.introspect_access_token(conf, permission_token, req_token)
     local tokenBody = {
         oxd_host = conf.oxd_http_url,
         oxd_id = conf.oxd_id,
-        access_token = token
+        access_token = req_token
     }
 
-    local tokenResponse = oxd.introspect_access_token(tokenBody)
+    local tokenResponse = oxd.introspect_access_token(tokenBody, permission_token)
 
     if _M.is_empty(tokenResponse.status) or tokenResponse.status == "error" or not tokenResponse.data.active then
         ngx.log(ngx.DEBUG, PLUGINNAME .. ": introspect_access_token active: false")
@@ -198,16 +223,17 @@ end
 
 --- Used to introspect RPT token
 -- @param conf: plugin global values
--- @param token: requested RPT token for introspect
+-- @param permission_token: permission access token
+-- @param req_token: requested RPT token for introspect
 -- @return response: response of introspect_rpt
-function _M.introspect_rpt(conf, token)
+function _M.introspect_rpt(conf, permission_token, req_token)
     local tokenBody = {
         oxd_host = conf.oxd_http_url,
         oxd_id = conf.oxd_id,
-        rpt = token
+        rpt = req_token
     }
 
-    local tokenResponse = oxd.introspect_rpt(tokenBody)
+    local tokenResponse = oxd.introspect_rpt(tokenBody, permission_token)
 
     if _M.is_empty(tokenResponse.status) or tokenResponse.status == "error" or not tokenResponse.data.active then
         ngx.log(ngx.DEBUG, PLUGINNAME .. ": introspect_rpt active: false")
