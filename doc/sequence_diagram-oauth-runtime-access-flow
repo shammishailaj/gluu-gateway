@@ -11,10 +11,10 @@ opt no token
     gluu-oauth2-client-plugin->Kong Proxy: 401 / Unauthorized
 end
 
-gluu-oauth2-client-plugin->kong-cache: Lookup token in cache
+gluu-oauth2-client-plugin->gluu-oauth2-client-plugin: Lookup token in cache
 
 opt token not in cache
-    gluu-oauth2-client-plugin->kong-cache: Lookup permission token in cache
+    gluu-oauth2-client-plugin->gluu-oauth2-client-plugin: Lookup permission token in cache
     opt no permission token in cache
         gluu-oauth2-client-plugin<->oxd: GET protection_access_token
     end
@@ -30,8 +30,7 @@ opt token not in cache
     opt &(allow_oauth_scope_expression == true and oauth_scope_expression is not match with token scope)
         gluu-oauth2-client-plugin->Kong Proxy: 401 / Unauthorized - Scope validation failed
     end
-    gluu-oauth2-client-plugin->kong-cache: write "token": {token JSON}
-    kong-cache->kong_db: add "token": {token JSON}
+    gluu-oauth2-client-plugin->gluu-oauth2-client-plugin: write "token": {token JSON}
 end
 
 kong-cache->gluu-oauth2-client-plugin: return token JSON

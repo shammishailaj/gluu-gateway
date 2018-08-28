@@ -1,0 +1,52 @@
+title Gluu OAuth2 RS access phase MIX mode
+
+client->Kong Proxy: HTTP request
+
+opt push claim
+    client->Kong Proxy: Add Header "UMA Data": {"claim_token":"...","claim_token_format":"..."}
+end
+
+Kong Proxy->gluu-oauth2-rs: ***** call "access" event for Kong plugin priority 998  *****
+
+
+alt no authenticated consumer
+    gluu-oauth2-rs->client: 401/Unauthorized
+end
+
+gluu-oauth2-rs->gluu-oauth2-rs: Lookup protected path
+
+gluu-oauth2-rs->gluu-oauth2-rs: Get token from Authorization Header
+
+gluu-oauth2-rs->gluu-oauth2-rs: Lookup token in cache
+
+alt cache found
+    opt missed required claim_token in header
+        gluu-oauth2-rs->client: 401/Unauthorized You need to pass claim token
+    end
+
+    opt token already authorized for this path/method[/claim]
+        gluu-oauth2-rs->Kong Proxy: Access granted
+    end
+end
+
+gluu-oauth2-rs->gluu-oauth2-rs: Lookup permission token in cache
+opt no permission token in cache
+    gluu-oauth2-rs<->oxd: GET protection_access_token
+end
+
+gluu-oauth2-rs<->oxd: get a ticket by uma_rs_check_access with empty rpt
+
+alt claim_token in header
+    gluu-oauth2-rs->oxd: get_rpt token with claim_token
+else
+    gluu-oauth2-rs->oxd: get_rpt
+end
+
+gluu-oauth2-rs<->oxd: uma_rs_check_access(rpt, protected path)
+
+alt access granted
+    gluu-oauth2-rs<->gluu-oauth2-rs: update cache
+    gluu-oauth2-rs->Kong Proxy: Access granted
+else
+    gluu-oauth2-rs->client: 403/Forbidden Failed to access resources
+end

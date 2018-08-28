@@ -1,0 +1,35 @@
+title Gluu OAuth2 RS access phase UMA mode
+
+client->Kong Proxy: HTTP request
+
+Kong Proxy->gluu-oauth2-rs: ***** call "access" event for Kong plugin priority 998  *****
+
+gluu-oauth2-rs->gluu-oauth2-rs: Get token from Authorization Header
+alt missed token
+    gluu-oauth2-rs->client: 401/Unauthorized
+end
+
+gluu-oauth2-rs<->gluu-oauth2-rs: Lookup protected path
+
+gluu-oauth2-rs<->gluu-oauth2-rs: Lookup token in cache
+
+alt cache found
+    opt token already authorized for this path/method
+        gluu-oauth2-rs->Kong Proxy: Access granted
+    end
+end
+
+gluu-oauth2-rs->gluu-oauth2-rs: Lookup permission token in cache
+opt no permission token in cache
+    gluu-oauth2-rs<->oxd: GET protection_access_token
+end
+
+gluu-oauth2-rs<->oxd: uma_rs_check_access(rpt, protected path)
+
+alt access granted
+    gluu-oauth2-rs<->gluu-oauth2-rs: update cache
+    gluu-oauth2-rs->Kong Proxy: Access granted
+else
+    gluu-oauth2-rs->client: 403/Forbidden
+end
+
