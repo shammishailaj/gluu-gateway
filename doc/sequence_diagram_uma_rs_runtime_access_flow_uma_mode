@@ -24,6 +24,11 @@ opt no permission token in cache
     gluu-oauth2-rs<->oxd: GET protection_access_token
 end
 
+gluu-oauth2-rs<->oxd: introspect_rpt(rpt, protected path)
+alt token not active
+    gluu-oauth2-rs->client: 401/Unauthorized
+end
+
 gluu-oauth2-rs<->oxd: uma_rs_check_access(rpt, protected path)
 
 alt access granted

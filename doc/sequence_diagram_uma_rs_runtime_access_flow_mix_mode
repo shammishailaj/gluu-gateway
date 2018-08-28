@@ -16,6 +16,9 @@ end
 gluu-oauth2-rs->gluu-oauth2-rs: Lookup protected path
 
 gluu-oauth2-rs->gluu-oauth2-rs: Get token from Authorization Header
+opt missed token
+    gluu-oauth2-rs->client: 401/Unauthorized
+end
 
 gluu-oauth2-rs->gluu-oauth2-rs: Lookup token in cache
 
