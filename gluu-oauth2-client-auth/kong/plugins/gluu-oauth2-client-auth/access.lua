@@ -282,7 +282,7 @@ local function validate_credentials(conf, req_token)
     -- set remaining data for caching
     local cacheTokenData = tokenResponse.data
     cacheTokenData.exp_sec = exp_sec
-    cacheTokenData.scopes = tokenResponse.data.scopes
+    cacheTokenData.scope = tokenResponse.data.scope
     cacheTokenData.token_type = tokenType
     cacheTokenData.associated_rpt = helper.ternary(tokenType == "UMA", req_token, nil)
     cacheTokenData.associated_oauth_token = helper.ternary(tokenType == "OAuth", req_token, nil)
