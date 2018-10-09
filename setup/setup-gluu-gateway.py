@@ -98,7 +98,7 @@ class KongSetup(object):
         self.distOxdServerDefaultConfigFile = '%s/oxd-default-site-config.json' % self.distOxdServerConfigPath
 
         self.kongaService = 'gluu-gateway'
-        self.oxdServerService = 'oxd-server'
+        self.oxdServerService = 'oxd-server-3.1.4'
         self.oxdHTTPExtensionService = 'oxd-https-extension'
 
         # oxd kong Property values
